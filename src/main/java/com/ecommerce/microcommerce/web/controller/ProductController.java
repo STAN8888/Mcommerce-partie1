@@ -2,6 +2,8 @@ package com.ecommerce.microcommerce.web.controller;
 
 import com.ecommerce.microcommerce.dao.ProductDao;
 import com.ecommerce.microcommerce.model.Product;
+import com.ecommerce.microcommerce.model.Marge;
+import com.ecommerce.microcommerce.web.exceptions.ProduitGratuitException;
 import com.ecommerce.microcommerce.web.exceptions.ProduitIntrouvableException;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
@@ -9,6 +11,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -24,6 +28,7 @@ import java.util.List;
 @RestController
 public class ProductController {
 
+    /************* @Autowired permet à Spring de fabriquer une instance de ProductController ***/
     @Autowired
     private ProductDao productDao;
 
@@ -69,6 +74,10 @@ public class ProductController {
 
     public ResponseEntity<Void> ajouterProduit(@Valid @RequestBody Product product) {
 
+        if(product.getPrix()==0) throw new ProduitGratuitException("Le produit avec l'id " + product.getId() + " est gratuit.");
+
+
+
         Product productAdded =  productDao.save(product);
 
         if (productAdded == null)
@@ -103,6 +112,34 @@ public class ProductController {
         return productDao.chercherUnProduitCher(400);
     }
 
+
+    /*****@GetMapping = @RequestMapping *************/
+
+    @GetMapping(value = "/AdminProduits")
+
+    public List<String> calculerMargeProduits() {
+        List<String> listMarge=new ArrayList<>();
+        List<Product> all = productDao.findAll();
+
+        for(Product prod:all){
+            Marge addMarge=new Marge();
+            addMarge.setId(prod.getId());
+            addMarge.setNom(prod.getNom());
+            addMarge.setPrix(prod.getPrix());
+            addMarge.setPrixAchat(prod.getPrixAchat());
+            addMarge.setMarge(prod.getPrix()-prod.getPrixAchat());
+
+            boolean add = listMarge.add(addMarge.toString());
+
+        }
+        return listMarge;
+    }
+
+    @GetMapping(value = "/ProduitsTrier")
+        public List<Product> alltrier() {
+            return  productDao.findAllByOrderByNom();
+
+    }
 
 
 }

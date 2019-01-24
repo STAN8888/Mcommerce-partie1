@@ -1,6 +1,5 @@
 package com.ecommerce.microcommerce.model;
 
-import com.fasterxml.jackson.annotation.JsonFilter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.Entity;
@@ -10,7 +9,7 @@ import javax.validation.constraints.Min;
 
 @Entity
 //@JsonFilter("monFiltreDynamique")
-public class Product {
+public class Marge {
 
     @Id
     @GeneratedValue
@@ -19,22 +18,26 @@ public class Product {
     @Length(min=3, max=20, message = "Nom trop long ou trop court. Et oui messages sont plus stylés que ceux de Spring")
     private String nom;
 
-
+    @Min(value = 1)
     private int prix;
 
     //information que nous ne souhaitons pas exposer
     private int prixAchat;
 
+    //information que nous ne souhaitons pas exposer
+    private int marge;
+
     //constructeur par défaut
-    public Product() {
+    public Marge() {
     }
 
     //constructeur pour nos tests
-    public Product(int id, String nom, int prix, int prixAchat) {
+    public Marge(int id, String nom, int prix, int prixAchat) {
         this.id = id;
         this.nom = nom;
         this.prix = prix;
         this.prixAchat = prixAchat;
+        this.marge=prix-prixAchat;
     }
 
     public int getId() {
@@ -69,6 +72,10 @@ public class Product {
         this.prixAchat = prixAchat;
     }
 
+    public int getMarge() { return marge; }
+
+    public void setMarge(int marge) { this.marge = marge; }
+
     @Override
     public String toString() {
 
@@ -76,6 +83,6 @@ public class Product {
                 "id=" + id +
                 ", nom='" + nom + '\'' +
                 ", prix=" + prix +
-                "} ";
+                "} :"+ marge;
     }
 }
